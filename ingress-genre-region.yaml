@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  creationTimestamp: "2023-09-25T13:51:13Z"
+  generation: 1
+  name: ingress-genre-region
+  namespace: my-games
+  resourceVersion: "872"
+  uid: b81ec486-69dd-4574-92af-243c2513c184
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: api-genre
+            port:
+              number: 5000
+        path: /filter/genre
+        pathType: Prefix
+      - backend:
+          service:
+            name: api-region
+            port:
+              number: 9090
+        path: /filter/region
+        pathType: Prefix
