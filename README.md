@@ -4,14 +4,16 @@ This project comprises of the following Kubernetes objects:
 
 ## Deployments:
 
--) api-region: Manages the deployment of api-region (a Flask-based app handling specific functionalities) 
--) api-genre: Manages the deployment of api-genre (a Flask-based app handling specific functionalities) 
+-) api-region: Manages the deployment of api-region (a Flask-based app handling specific functionalities);
+
+-) api-genre: Manages the deployment of api-genre (a Flask-based app handling specific functionalities);
+
 -) game-store-db: Manages the deployment of the game-store-db database.
 
-Services: 
--) api-genre (Exposed externally through an Ingress controller). 
--) api-region (Exposed externally through an Ingress controller). 
--) game-store-db.
+## Services: 
+-) api-genre (Exposed externally through an Ingress controller);
+-) api-region (Exposed externally through an Ingress controller); 
+-) game-store-db;
 
 Additional Components:
 Secret for Database Initialization: 
