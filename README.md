@@ -40,4 +40,4 @@ This project comprises of the following Kubernetes objects:
 kubectl apply -k api-orchestrator-simple
 ```
 
- -)Use the Ingress endpoint to access the API services externally. APIs communicate securely with the MySQL database.
+ -)Use the Ingress endpoint to access the API services externally. APIs communicate securely with the MySQL database
