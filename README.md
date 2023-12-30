@@ -13,7 +13,9 @@ This project comprises of the following Kubernetes objects:
 ## Services: 
 
 -) api-genre (Exposed externally through an Ingress controller);
+
 -) api-region (Exposed externally through an Ingress controller); 
+
 -) game-store-db;
 
 ## Additional Components:
