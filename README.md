@@ -32,9 +32,9 @@ This project comprises of the following Kubernetes objects:
 
 -) Configuration Components (utilizes Kustomize for Kubernetes manifest management);
 
-## Usage: Deploy the Project:
+## Usage: Deploy the Project
  
- -) Apply the Kubernetes manifests using Kustomize to deploy the API services, MySQL database, secret, and configmap. Run the command: Accessing APIs: 
+ -) Apply the Kubernetes manifests using Kustomize. Run the command: Accessing APIs: 
  
  ```
 kubectl apply -k api-orchestrator-simple
