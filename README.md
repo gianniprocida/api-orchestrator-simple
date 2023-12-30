@@ -1,8 +1,8 @@
-Project Description
+# Project Description
 
 This project comprises of the following Kubernetes objects:
 
-Deployments:
+## Deployments:
 
 -) api-region: Manages the deployment of api-region (a Flask-based app handling specific functionalities) 
 -) api-genre: Manages the deployment of api-genre (a Flask-based app handling specific functionalities) 
