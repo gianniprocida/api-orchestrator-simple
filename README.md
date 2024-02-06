@@ -132,9 +132,9 @@ kubectl apply -f game-store-db-serviceyaml
 ```
 
 
-## Create the Flask Python Api
+## Create the API-Genre and the API-Region
 
-Go the folder `source-api-region` and then run the folling command:
+Navigate to the `souce-api-genre` and run the two commands:
 
 ```
 docker build -f Dockerfile -t <yourDockerHub>/api-genre:v1.0
@@ -176,11 +176,78 @@ spec:
         resources: {}
 status: {}
 ```
+Our sensitive information are securely injected into the container using the `envFrom` section so that our api will know how to connect to the MySQL Service.
+
 
 Apply the Deployment from the `api-genre-deploy.yaml` file:
 ```
 kubectl apply -f api-genre-deploy.yaml
 ```
+
+
+
+We will create a Service to proxy the traffic to the API pod:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: api-genre
+  name: api-genre
+  namespace: my-games
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: api-genre
+status:
+  loadBalancer: {}
+```
+
+
+Apply the Service from the `api-genre-deploy.yaml` file:
+```
+kubectl apply -f api-genre-deploy.yaml
+```
+
+
+Next, let's configure the second API. Go to the `source-api-region` directory and execute the following two commands:
+
+
+```
+docker build -f Dockerfile -t <yourDockerHub>/api-region:v1.0
+docker push <yourDockerHub>/api-region:v1.0
+```
+
+
+
+Apply the Deployment from the `api-genre-deploy.yaml` file:
+```
+kubectl apply -f api-genre-deploy.yaml
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Now we will user this configuaration for
