@@ -25,7 +25,7 @@ This tutorial shows you how deploy a simple ingress to route certain paths of th
 * kustomization
 * namespace
 
-# How to initialize the MySQL database with specific state provided by a ConfigMap and a Secret resources 
+## How to initialize the MySQL database with specific state provided by a ConfigMap and a Secret resources 
 To ensure secure storage of sensitive MySQL database credentials, we'll create a secret named mysql-cred using a script named `database-cred.sh`:
 
 ```
@@ -126,7 +126,6 @@ status:
   loadBalancer: {}
 ```
 
-```
 Apply the Service from the `game-store-db-service.yaml` file:
 ```
 kubectl apply -f game-store-db-serviceyaml
