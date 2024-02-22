@@ -15,8 +15,13 @@ This tutorial shows you how deploy a simple ingress to route certain paths of th
 # Objectives
 
 * How to initialize the MySQL database with specific state provided by a ConfigMap and a Secret resources 
+* Start up the api-region and api-pod
+* Start up the simple frontend pod
+* Expose the two api's and the frontend pod
+* Apply the Ingress resource to expose the two APIs and the frontend service
+* Access them locally using localhost and the ports exposed by your services.
 
-* api-genre-svc
+
 * api-region-deploy
 * api-region-svc
 * game-store-db-svc
@@ -186,7 +191,7 @@ kubectl apply -f api-genre-deploy.yaml
 
 
 
-We will create a Service to proxy the traffic to the API pod:
+We will create a Service to proxy the traffic to the api-genre pod:
 
 ```
 apiVersion: v1
@@ -209,9 +214,9 @@ status:
 ```
 
 
-Apply the Service from the `api-genre-deploy.yaml` file:
+Apply the Service from the `api-genre-service.yaml` file:
 ```
-kubectl apply -f api-genre-deploy.yaml
+kubectl apply -f api-genre-service.yaml
 ```
 
 
@@ -223,29 +228,176 @@ docker build -f Dockerfile -t <yourDockerHub>/api-region:v1.0
 docker push <yourDockerHub>/api-region:v1.0
 ```
 
+These commands build and push a Docker image tagged as <yourDockerHub>/api-region:v1.0 to your Docker registry for deployment. 
 
 
-Apply the Deployment from the `api-genre-deploy.yaml` file:
+Apply the Deployment from the `api-region-deploy.yaml` file:
 ```
-kubectl apply -f api-genre-deploy.yaml
+kubectl apply -f api-region-deploy.yaml
+```
+
+
+We will create another Service to proxy the traffic to the api-region pod:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: api-region
+  name: api-region
+  namespace: my-games
+spec:
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: api-region
+status:
+  loadBalancer: {}
+```
+
+
+
+Query the list of Services to verify that the Redis Service is running:
+
+```
+kubectl get service -n my-games
 ```
 
 
 
 
+## Create the frontend menu
 
 
 
+Next, we'll create a ConfigMap named `index-html`, utilizing the index.html file, to establish the volume configuration for future mounting into the pod:
+
+```
+kubectl create configmap index-html \
+--from-file=index.html -n my-games
+
+```
+
+
+Apply the Deployment from the `simple-frontend-deploy.yaml` file:
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: simple-frontend
+  name: simple-frontend
+  namespace: my-games
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-frontend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: simple-frontend
+    spec:
+      volumes:
+       - name: index-html
+         configMap:
+          name: index-html
+      containers:
+      - image: gprocida/simple-frontend
+        name: simple-frontend
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        volumeMounts:
+         - name: index-html
+           mountPath: /usr/share/nginx/html
+        resources: {}
+status: {}
+```
+
+
+A volume named `index-html` sourced from a ConfigMap named "index-html" is mounted at /usr/share/nginx/html within the container. By providing access to this volumes, changes can be made to the default Nginx page served by the container.
+
+
+We will create another Service to proxy the traffic to the frontend pod:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: simple-frontend
+  name: simple-frontend
+  namespace: my-games
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: simple-frontend
+status:
+  loadBalancer: {}
+```
 
 
 
+We can query the list of Services to verify their operation status:
+
+```
+kubectl get service -n my-games
+```
 
 
 
+## Deploy Ingress Controller
+
+Once we have defined our services we can expose them externally using an ingress. Before deployng the ingress resource, make sure that the Ingress controller is installed on your cluster:
 
 
-
-
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  generation: 1
+  name: ingress-genre-region
+  namespace: my-games
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: api-genre
+            port:
+              number: 5000
+        path: /filter/genre
+        pathType: Prefix
+      - backend:
+          service:
+            name: api-region
+            port:
+              number: 9090
+        path: /filter/region
+        pathType: Prefix
+      - backend:
+          service:
+            name: simple-frontend
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+```
 
 
 
