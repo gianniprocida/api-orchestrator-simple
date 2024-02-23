@@ -19,9 +19,8 @@ spec:
         app: api-genre
     spec:
       containers:
-      - image: giprocida/genre
+      - image: gprocida/api-genre:v1.0
         name: api-genre
-        imagePullPolicy: Never
         ports:
         - containerPort: 5000
         envFrom:

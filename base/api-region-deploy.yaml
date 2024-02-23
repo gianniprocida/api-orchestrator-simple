@@ -19,9 +19,8 @@ spec:
         app: api-region
     spec:
       containers:
-      - image: giprocida/region
+      - image: gprocida/api-region:v1.0
         name: api-region
-        imagePullPolicy: Never
         envFrom:
         - secretRef: 
             name: mysql-cred

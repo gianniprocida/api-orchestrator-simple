@@ -23,3 +23,10 @@ spec:
               number: 9090
         path: /filter/region
         pathType: Prefix
+      - backend:
+          service:
+            name: simple-frontend
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
