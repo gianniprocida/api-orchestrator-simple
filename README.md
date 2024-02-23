@@ -20,7 +20,15 @@ This tutorial shows you how deploy a simple ingress to route certain paths of th
 
 
 ## How to initialize the MySQL database with specific state provided by a ConfigMap and a Secret resources 
-To ensure secure storage of sensitive MySQL database credentials, we'll create a secret named `mysql-cred` using a script named `database-cred.sh`:
+
+
+Clone the repository to your local machine, then navigate to the project folder and to the `base` folder. Create a new namespace named `my-games`:
+
+```
+kubectl create ns my-games
+```
+
+Create a file called `.database-cred` in the current working directory and add the environment variables:
 
 ```
 MYSQL_ROOT_PASSWORD=<yourpassword>
@@ -128,10 +136,10 @@ kubectl apply -f game-store-db-serviceyaml
 
 ## Create the API-Genre and the API-Region
 
-Navigate to the `souce-api-genre` and run the two commands:
+Navigate to the `source-api-genre` and run the two commands:
 
 ```
-docker build -f Dockerfile -t <yourDockerHub>/api-genre:v1.0
+docker build -f Dockerfile -t <yourDockerHub>/api-genre:v1.0 .
 docker push <yourDockerHub>/api-genre:v1.0
 ```
 
@@ -161,7 +169,6 @@ spec:
       containers:
       - image: gprocida/api-genre:v1.0
         name: api-genre
-        imagePullPolicy: Never
         ports:
         - containerPort: 5000
         envFrom:
@@ -213,7 +220,7 @@ Next, let's configure the second API. Go to the `source-api-region` directory an
 
 
 ```
-docker build -f Dockerfile -t <yourDockerHub>/api-region:v1.0
+docker build -f Dockerfile -t <yourDockerHub>/api-region:v1.0 .
 docker push <yourDockerHub>/api-region:v1.0
 ```
 
@@ -244,7 +251,6 @@ spec:
       containers:
       - image: gprocida/api-region:v1.0
         name: api-region
-        imagePullPolicy: Never
         envFrom:
         - secretRef: 
             name: mysql-cred
@@ -336,9 +342,8 @@ spec:
          configMap:
           name: index-html
       containers:
-      - image: gprocida/simple-frontend
+      - image: nginx
         name: simple-frontend
-        imagePullPolicy: Never
         ports:
         - containerPort: 80
         volumeMounts:
@@ -427,65 +432,33 @@ spec:
 
 ## Test your endpoints
 
-
+```
 curl -v localhost/filter/region
 curl -v localhost/filter/genre
 curl -v localhost/
-
-
-
-
-
-Now we will user this configuaration for
- api-region: Manages the deployment of api-region (a Flask-based app handling specific functionalities);
-
--) api-genre: Manages the deployment of api-genre (a Flask-based app handling specific functionalities);
-
--) game-store-db: Manages the deployment of the game-store-db database.
-A single-instance Redis to store guestbook entries
-Multiple web frontend instances
-
-This project comprises of the following Kubernetes objects:
-
-## Deployments:
-
--) api-region: Manages the deployment of api-region (a Flask-based app handling specific functionalities);
-
--) api-genre: Manages the deployment of api-genre (a Flask-based app handling specific functionalities);
-
--) game-store-db: Manages the deployment of the game-store-db database.
-
-## Services: 
-
--) api-genre (Exposed externally through an Ingress controller);
-
--) api-region (Exposed externally through an Ingress controller); 
-
--) game-store-db;
-
-## Additional Components:
-
--) Secret for Database Initialization (contains sensitive data required for initializing the MySQL database securely);
-
--) ConfigMap for API-Database Communication (configures the API services to communicate with the MySQL database);
-
-## Project Flow: 
-
--) Ingress Configuration (allows external access to both Flask API services. API Interaction); 
-
--)External clients can interact with the APIs to query the MySQL database.
-
--) Configuration Components (utilizes Kustomize for Kubernetes manifest management);
-
-## Usage: Deploy the Project
- 
- -) Apply the Kubernetes manifests using Kustomize. Run the command: Accessing APIs: 
- 
- ```
-kubectl apply -k base
 ```
 
- -)Use the Ingress endpoint to access the API services externally. APIs communicate securely with the MySQL database
+If the requests are successful and all configurations are correct, the server will return a response with the status code 200 OK.
+
+# Applying Resources and Creating Secrets and ConfigMaps with Kustomize
+
+
+Rather than applying each resource individually, streamline the process using the Kustomize tool in Kubernetes. Navigate one directory back and execute the following command:
+ 
+ ```
+ kubectl apply -k base
+ ```
+ 
+ This will do four things:
+
+ 1. Create the `my-games` namespace if it doesn t exist
+ 2. Generate necessary configmaps
+ 3. Generate necessay secret
+ 4. Apply all resources to the `my-games` namespace
+
+Remember, before applying the resources, ensure that you have built your Docker image and pushed it to your Docker registry
+After applying the resources, re-run your tests to verify the correct configuration of all resources.
+
 
  To delete all the objects deployed, run the command:
  ```
