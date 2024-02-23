@@ -1,37 +1,26 @@
-# Example: Deploying two Flask Api with a MYSQL Database in Kubernetes
+# Deploying Flask APIs, Simple Frontend, and MySQL Database in a Kubernetes Cluster
 
-This tutorial shows you how deploy a simple ingress to route certain paths of the host to a different backend. This example consists of the following kubernetes components:
-* api-genre-deploy
-* api-genre-svc
-* api-region-deploy
-* api-region-svc
-* game-store-db-svc
-* game-store-db
-* ingress-genre-region
-* kustomization
-* namespace
+Requirements:
+
+* Docker Desktop
+* nginx controller installed
+
+This tutorial shows you how deploy a simple ingress to route certain paths of the host to a different backend. 
 
 
 # Objectives
 
 * How to initialize the MySQL database with specific state provided by a ConfigMap and a Secret resources 
-* Start up the api-region and api-pod
-* Start up the simple frontend pod
+* Start up the api-region and api-pod deployment
+* Start up the simple frontend pod deployment
 * Expose the two api's and the frontend pod
 * Apply the Ingress resource to expose the two APIs and the frontend service
-* Access them locally using localhost and the ports exposed by your services.
+* Test your endpoints
 
 
-* api-region-deploy
-* api-region-svc
-* game-store-db-svc
-* game-store-db
-* ingress-genre-region
-* kustomization
-* namespace
 
 ## How to initialize the MySQL database with specific state provided by a ConfigMap and a Secret resources 
-To ensure secure storage of sensitive MySQL database credentials, we'll create a secret named mysql-cred using a script named `database-cred.sh`:
+To ensure secure storage of sensitive MySQL database credentials, we'll create a secret named `mysql-cred` using a script named `database-cred.sh`:
 
 ```
 MYSQL_ROOT_PASSWORD=<yourpassword>
@@ -231,6 +220,42 @@ docker push <yourDockerHub>/api-region:v1.0
 These commands build and push a Docker image tagged as <yourDockerHub>/api-region:v1.0 to your Docker registry for deployment. 
 
 
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: api-region
+  name: api-region
+  namespace: my-games
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-region
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: api-region
+    spec:
+      containers:
+      - image: gprocida/api-region:v1.0
+        name: api-region
+        imagePullPolicy: Never
+        envFrom:
+        - secretRef: 
+            name: mysql-cred
+        ports:
+        - containerPort: 5000
+        resources: {}
+status: {}
+```
+
+
+
 Apply the Deployment from the `api-region-deploy.yaml` file:
 ```
 kubectl apply -f api-region-deploy.yaml
@@ -361,7 +386,7 @@ kubectl get service -n my-games
 
 ## Deploy Ingress Controller
 
-Once we have defined our services we can expose them externally using an ingress. Before deployng the ingress resource, make sure that the Ingress controller is installed on your cluster:
+Before exposing your services externally using an Ingress, ensure that your Kubernetes cluster has an Ingress controller installed and configured. Services can be accessed externally from localhost once the Ingress controller is set up.
 
 
 ```
@@ -398,6 +423,15 @@ spec:
         path: /
         pathType: Prefix
 ```
+
+
+## Test your endpoints
+
+
+curl -v localhost/filter/region
+curl -v localhost/filter/genre
+curl -v localhost/
+
 
 
 
